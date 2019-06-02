@@ -13,18 +13,18 @@ protocol CellConfig: class{
     func setCell(cell: CellType, index: Int)
 }
 
-
-class GenericBaseCollectionView<CellType: UICollectionViewCell,DataSource, cellConfigDelegate: CellConfig>: UICollectionView, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource  {
+//refactor with extensions
+class GenericBaseCollectionView<CellType: UICollectionViewCell,DataSource, CellConfigDelegate: CellConfig>: UICollectionView, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout, UICollectionViewDataSource  {
     //collection view setup properties
-    var sectionsCount: Int!
-    var cellsCount: Int!
-    let cellID = CellType.description()
+    private var sectionsCount: Int!
+    private var cellsCount: Int!
     var cellSize: CGSize!
-    var cellConfig: cellConfigDelegate!
+    var cellConfigDelegate: CellConfigDelegate!
+    private let cellID = CellType.description()
     
     override init(frame: CGRect, collectionViewLayout layout: UICollectionViewLayout) {
         super.init(frame: frame, collectionViewLayout: layout)
-        register(CellType.self, forCellWithReuseIdentifier: CellType.description())
+        register(CellConfigDelegate.CellType.self, forCellWithReuseIdentifier: CellType.description())
         dataSource = self
         delegate = self
     }
@@ -40,13 +40,15 @@ class GenericBaseCollectionView<CellType: UICollectionViewCell,DataSource, cellC
         reloadData()
     }
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return cellsCount
+        return cellsCount ?? 0
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let genericCell = dequeueReusableCell(withReuseIdentifier: cellID, for: indexPath) as! cellConfigDelegate.CellType
-        if let cellConfig = cellConfig {
-        cellConfig.setCell(cell: genericCell, index: indexPath.item)
+        let genericCell = dequeueReusableCell(withReuseIdentifier: cellID, for: indexPath) as! CellConfigDelegate.CellType
+        if let cellConfig = cellConfigDelegate {
+            if cellsCount > 0 {
+                cellConfig.setCell(cell: genericCell, index: indexPath.item)
+            }
         }
         return genericCell
     }
@@ -56,7 +58,7 @@ class GenericBaseCollectionView<CellType: UICollectionViewCell,DataSource, cellC
         return cellSize
     }
     func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return sectionsCount
+        return sectionsCount ?? 1
     }
 
 }

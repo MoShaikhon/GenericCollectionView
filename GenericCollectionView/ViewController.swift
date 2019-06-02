@@ -8,34 +8,48 @@
 
 import UIKit
 
-class ViewController: UIViewController, CellConfig {
+class ViewController: UIViewController, GameView {
+    var presenter: GamePresenter!
+
     
-    //protocol conformance
-    typealias CellType = CustomCell
-    func setCell(cell: CustomCell, index: Int) {
-        cell.backgroundColor = .red
-        cell.someLabel.text = items[index].someText
+    func fetchedGamesSuccessfully() {
+        self.gamesCollectionView.configureCollectionView(numberOfCells: presenter.getNumberOfgames(), numberOfSections: 1, cellSize: CGSize(width: self.view.frame.width, height: 100))
+        gamesCollectionView.reloadData()
     }
     
-    //dummy data
-     var items: [TrialModel] = [TrialModel(someText: "hi"), TrialModel(someText: "hello")]
     
-    //instantiate a collectionview
-    lazy var collectionView: GenericBaseCollectionView<CustomCell, TrialModel, ViewController> = {
-        let cv = GenericBaseCollectionView<CustomCell, TrialModel, ViewController>(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
-        cv.configureCollectionView(numberOfCells: items.count, numberOfSections: 1, cellSize: CGSize(width: 100, height: 100))
+    weak var gameCellView: GameCellView!
+    
+
+    lazy var gamesCollectionView: GenericBaseCollectionView<CustomCell, Game, ViewController> = {
+        let cv = GenericBaseCollectionView<CustomCell, Game, ViewController>(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
         cv.backgroundColor = .blue
         return cv
     }()
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        collectionView.cellConfig = self
-        view.backgroundColor = .white
-        view.addSubview(collectionView)
-        collectionView.frame = CGRect(x: 0, y: 0, width: view.frame.width, height: view.frame.height)
+    fileprivate func setupCollectionView() {
+        gamesCollectionView.cellConfigDelegate = self
+        view.addSubview(gamesCollectionView)
+        gamesCollectionView.frame = CGRect(x: 0, y: 0, width: view.frame.width, height: view.frame.height)
     }
     
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .white
+        setupCollectionView()
+         presenter = GamePresenter(gameView: self)
+        presenter.getAllGames()
+    }
 
 
 }
+extension ViewController: CellConfig {
+    //protocol conformance
+    typealias CellType = CustomCell
+    func setCell(cell: CellType, index: Int) {
+        presenter.updateGameCell(gameCell: cell, row: index)
+    }
+}
+
+
+//TODO: Unit tests, More Alamofire requests, Add Localization

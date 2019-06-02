@@ -7,6 +7,13 @@
 //
 
 import Foundation
-struct TrialModel {
-    var someText: String
+struct Game: Decodable {
+    let _id: String
+    let isAAA: Bool
+    let protections, versions: [String]
+    let updatedAt, title, slug: String
+    let releaseDate: String
+    let image, imagePoster: String
+    let steamPrice: Int?
+    let url: String
 }
